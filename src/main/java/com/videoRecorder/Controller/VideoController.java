@@ -79,7 +79,7 @@ public class VideoController {
             }
             grabber = FrameGrabber.createDefault(0);
             grabber.start();
-            recorder = FrameRecorder.createDefault("output" + time + ".mp4", grabber.getImageWidth(), grabber.getImageHeight());
+            recorder = FrameRecorder.createDefault("output_video" + time + ".mp4", grabber.getImageWidth(), grabber.getImageHeight());
             recorder.start();
             recording = true;
             Thread recordingThread = new Thread(this::recordFrames);
@@ -92,7 +92,7 @@ public class VideoController {
     private void recordAudio(String time) {
         System.out.println("Started Video Recording");
         try {
-            audioFile = new File("output" + time + ".wav");
+            audioFile = new File("output_audio/output" + time + ".wav");
             System.out.println(audioFile);
             AudioFormat audioFormat = new AudioFormat(44100, 16, 1, true, false);
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
