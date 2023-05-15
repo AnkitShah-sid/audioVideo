@@ -6,12 +6,13 @@ import org.bytedeco.javacv.FrameRecorder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class VideoService extends IOService {
+public class VideoService {
 
+    public boolean recording;
     private FrameGrabber grabber;
     private FrameRecorder recorder;
 
-    public void recordVideo(String time) {
+    public void startRecordingVideo(String time) {
         try {
             if (recording) {
                 throw new IllegalStateException("Recording is already in progress.");
@@ -40,10 +41,15 @@ public class VideoService extends IOService {
         }
     }
 
-    public void stopVideoRecording() throws FrameGrabber.Exception, FrameRecorder.Exception {
-        grabber.stop();
-        grabber.release();
-        recorder.stop();
-        recorder.release();
+    public void stopVideoRecording() {
+        recording = false;
+        try {
+            grabber.stop();
+            grabber.release();
+            recorder.stop();
+            recorder.release();
+        } catch (FrameGrabber.Exception | FrameRecorder.Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
