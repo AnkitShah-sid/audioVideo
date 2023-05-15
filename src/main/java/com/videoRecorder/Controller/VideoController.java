@@ -1,8 +1,9 @@
 package com.videoRecorder.Controller;
 
-import org.bytedeco.javacv.Frame;
+import com.videoRecorder.Service.VideoService;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,9 +21,8 @@ import java.io.IOException;
 @RequestMapping("/")
 public class VideoController {
 
-    private FrameGrabber grabber;
-    private FrameRecorder recorder;
-    private boolean recording;
+    @Autowired
+    private VideoService videoService;
 
     private AudioInputStream audioInputStream;
     private TargetDataLine targetDataLine;
@@ -31,7 +31,7 @@ public class VideoController {
     @GetMapping("")
     public String getHome(Model model) {
         model.addAttribute("pageName", "Video Recorder");
-        model.addAttribute("recording", recording);
+        model.addAttribute("recording", videoService.getRecording());
         return "index";
     }
 
@@ -39,24 +39,21 @@ public class VideoController {
     @PostMapping("/updateRecording")
     public ResponseEntity<String> updateRecording(@RequestParam("recording") Boolean toggleRecordingStart) {
         if (toggleRecordingStart) {
-            if (recording) {
+            if (videoService.getRecording()) {
                 throw new IllegalStateException("Already got recording in progress.");
             }
             String time = String.valueOf(System.currentTimeMillis());
-            recordVideo(time);
+            videoService.recordVideo(time);
             recordAudio(time);
             return new ResponseEntity<>("Recording started successfully", HttpStatus.OK);
         } else {
             try {
-                if (!recording) {
+                if (!videoService.getRecording()) {
                     throw new IllegalStateException("No recording in progress.");
                 }
-                recording = false;
+                videoService.setRecording(false);
                 // STOP VIDEO RECORDING
-                grabber.stop();
-                grabber.release();
-                recorder.stop();
-                recorder.release();
+                videoService.stopVideoRecording();
                 // STOP AUDIO RECORDING
                 targetDataLine.stop();
                 targetDataLine.close();
@@ -67,23 +64,6 @@ public class VideoController {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-    }
-
-    private void recordVideo(String time) {
-        try {
-            if (recording) {
-                throw new IllegalStateException("Recording is already in progress.");
-            }
-            grabber = FrameGrabber.createDefault(0);
-            grabber.start();
-            recorder = FrameRecorder.createDefault("output_video\\output" + time + ".mp4", grabber.getImageWidth(), grabber.getImageHeight());
-            recorder.start();
-            recording = true;
-            Thread recordingThread = new Thread(this::recordFrames);
-            recordingThread.start();
-        } catch (IllegalStateException | FrameGrabber.Exception | FrameRecorder.Exception e) {
-            throw new RuntimeException("Recording start error " + e);
         }
     }
 
@@ -108,7 +88,7 @@ public class VideoController {
     private void recordAudioFrames() {
         System.out.println("Started Audio Recording");
         AudioFileFormat.Type fileType = AudioFileFormat.Type.WAVE;
-        while (recording) {
+        while (videoService.getRecording()) {
             try {
                 AudioSystem.write(audioInputStream, fileType, audioFile);
             } catch (IOException e) {
@@ -117,16 +97,5 @@ public class VideoController {
         }
     }
 
-    private void recordFrames() {
-        try {
-            while (recording) {
-                Frame frame = grabber.grab();
-                recorder.record(frame);
-                Thread.sleep(33);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 }
