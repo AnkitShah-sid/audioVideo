@@ -3,17 +3,16 @@ package com.videoRecorder.Controller;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
-import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.imageio.ImageIO;
 import javax.sound.sampled.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -21,13 +20,12 @@ import java.io.IOException;
 @RequestMapping("/")
 public class VideoController {
 
-
     private FrameGrabber grabber;
     private FrameRecorder recorder;
     private boolean recording;
 
     private AudioInputStream audioInputStream;
-    private TargetDataLine targetDataLine ;
+    private TargetDataLine targetDataLine;
     private File audioFile;
 
     @GetMapping("")
@@ -131,4 +129,4 @@ public class VideoController {
         }
     }
 
- }
+}
