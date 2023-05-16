@@ -12,13 +12,33 @@ public class AudioService {
     private AudioInputStream audioInputStream;
     private TargetDataLine targetDataLine;
     private File audioFile;
-    public Boolean recording;
+    public Boolean recording = false;
 
 
     public void startRecordingAudio(String time) {
+
         try {
             System.out.println("Started Audio Recording");
-            audioFile = new File("output_audio\\output" + time + ".wav");
+            recording = true;
+
+
+
+            String outputFolderPath = "output_audio";
+            String outputFileName = "output" + time + ".wav";
+
+            // Create the output folder if it doesn't exist
+            File outputFolder = new File(outputFolderPath);
+            if (!outputFolder.exists()) {
+                boolean created = outputFolder.mkdirs();
+                if (!created) {
+                    throw new RuntimeException("Failed to create the output folder.");
+                }
+            }
+
+            String outputFilePath = outputFolderPath + File.separator + outputFileName;
+
+
+            audioFile = new File(outputFilePath);
             AudioFormat audioFormat = new AudioFormat(44100, 16, 1, true, false);
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
             targetDataLine = (TargetDataLine) AudioSystem.getLine(info);
@@ -45,6 +65,7 @@ public class AudioService {
 
     public void stopAudioRecording() {
         try {
+            System.out.println("Stop audio Recording");
             recording = false;
             targetDataLine.stop();
             targetDataLine.close();

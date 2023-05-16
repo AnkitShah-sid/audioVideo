@@ -56,6 +56,7 @@ public class VideoController {
                     throw new IllegalStateException("No recording in progress.");
                 }
                 // STOP AUDIO RECORDING
+
                 audioService.stopAudioRecording();
                 return new ResponseEntity<>("Recording stopped successfully", HttpStatus.OK);
             } catch (IllegalStateException e) {

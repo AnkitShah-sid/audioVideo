@@ -5,6 +5,8 @@ import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+
 @Service
 public class VideoService {
 
@@ -14,12 +16,23 @@ public class VideoService {
 
     public void startRecordingVideo(String time) {
         try {
+            System.out.println("Started video Recording");
             if (recording) {
                 throw new IllegalStateException("Recording is already in progress.");
             }
+            String outputFolderPath = "output_video";
+            String outputFileName = "output" + time + ".mp4";
+            File outputFolder = new File(outputFolderPath); // Create the output folder if it doesn't exist
+            if (!outputFolder.exists()) {
+                boolean created = outputFolder.mkdirs();
+                if (!created) {
+                    throw new RuntimeException("Failed to create the output folder.");
+                }
+            }
+            String outputFilePath = outputFolderPath + File.separator + outputFileName;
             grabber = FrameGrabber.createDefault(0);
             grabber.start();
-            recorder = FrameRecorder.createDefault("output_video\\output" + time + ".mp4", grabber.getImageWidth(), grabber.getImageHeight());
+            recorder = FrameRecorder.createDefault(outputFilePath, grabber.getImageWidth(), grabber.getImageHeight());
             recorder.start();
             recording = true;
             Thread recordingThread = new Thread(this::recordFrames);
@@ -42,6 +55,8 @@ public class VideoService {
     }
 
     public void stopVideoRecording() {
+
+        System.out.println("Stop video Recording");
         recording = false;
         try {
             grabber.stop();
